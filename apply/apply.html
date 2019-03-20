@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>贷款申请</title>
+	<meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<link rel="stylesheet" href="apply.css">
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<script src="https://unpkg.com/vue/dist/vue.js"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <!-- import JavaScript -->
+  	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  	<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+  	<script>
+		var pixelRatio = 1 / window.devicePixelRatio;    //还原设备的真实分辨率；  
+		//devicePixelRatio设备的像素比   像素比：物理像素/逻辑像素；          
+		document.write('<meta name="viewport" content="width=device-width,initial-scale='+pixelRatio+',minimum-scale='+pixelRatio+',maximum-scale='+pixelRatio+'" />');
+
+		var html=document.getElementsByTagName('html')[0];   //获取每个型号的手的html元素
+		var pageWidth=html.getBoundingClientRect().width;   //获取每个型号的手的宽度
+		html.style.fontSize=pageWidth/10+"px";        //除10获取每个型号手机的根元素字体大小    
+		//rem是相对于根元素   动态的获取每个型号手机下面根元素的字体大小              
+	</script>
+</head>
+<body>
+	<div class="h1">贷款申请</div>
+	<div class="apply">
+		<div class="p1">&nbsp;&nbsp;&nbsp;&nbsp;本人（本公司)<span class="name"></span>现申请通过安徽国元
+		互联网金融信息服务股份有限公司运营的网络平台公开融资人民币共计<span class="money"></span>万元,期限<span class="month"></span>个月</div>
+		<div class="p3">&nbsp;&nbsp;&nbsp;&nbsp;本人（本公司）在此郑重承诺：</div>
+		<div class="p4">&nbsp;&nbsp;&nbsp;&nbsp;1.所提供的资料真实、合法、有效，如有隐瞒或虚构本人（本公司）自愿承担一切法律责任。</div>
+		<div class="p6">&nbsp;&nbsp;&nbsp;&nbsp;2.单个借款人（法人或其他组织）在所有网络借贷信息中介机构平台借款总余额（含本次借款金额）不超过人民币500万元；单个借款人（自然人）在所有网络借贷信息中介机构平台借款总余额（含本次借款金额）不超过人民币100万元。</div>
+	</div>
+		<div class="foote">
+		<div class="p10">申请人签字（盖章）：<p class="seal"></p><canvas id="canvas" width="600" height="600">
+     您的浏览器不支持canvas技术,请升级浏览器!
+   </canvas></div>
+		<div class="p11"> 联系方式：<p class="telephone"></p></div>
+		<div class="p12">日期：<span class="year"></span>年<span class="month2"></span>月<span class="day"></span>日</div>
+		</div>
+		
+	<script type="">
+		function WriteFont(id, options) {
+var self = this;
+this.canvas = document.getElementById(id);
+var obj = {
+canvas: this.canvas,
+context: this.canvas.getContext("2d"),
+isWrite: false, //是否开始
+lastWriteTime: -1,
+lastWriteSpeed: 0,
+lastWriteWidth: 0,
+canvasWidth: 400, //canvas宽高
+canvasHeight: 200,
+isShowBorder: true, //是否显示网格
+bgColor: '#fff', //背景色
+borderWidth: 2, // 网格线宽度
+borderColor: "#fff", //网格颜色
+lastPoint: {}, //
+writeWidth: 2, //基础轨迹宽度
+maxWriteWidth: 30, // 写字模式最大线宽
+minWriteWidth: 1, // 写字模式最小线宽
+writeColor: '#000', // 轨迹颜色
+isWriteName:false //签名模式
+}
+ 
+for(var name in options) {
+obj[name] = options[name];
+}
+ 
+/**
+* 轨迹宽度
+*/
+this.setLineWidth = function() {
+var nowTime = new Date().getTime();
+var diffTime = nowTime - obj.lastWriteTime;
+obj.lastWriteTime = nowTime;
+var returnNum = obj.minWriteWidth + (obj.maxWriteWidth - obj.minWriteWidth) * diffTime / 30;
+if(returnNum < obj.minWriteWidth) {
+returnNum = obj.minWriteWidth;
+} else if(returnNum > obj.maxWriteWidth) {
+returnNum = obj.maxWriteWidth;
+}
+ 
+returnNum = returnNum.toFixed(2);
+//写字模式和签名模式
+if(obj.isWriteName){
+obj.context.lineWidth = obj.writeWidth;
+}else{
+obj.context.lineWidth = obj.lastWriteWidth = obj.lastWriteWidth / 4 * 3 + returnNum / 4;
+}
+}
+ 
+/**
+* 绘制轨迹
+*/
+this.writing = function(point) {
+obj.context.beginPath();
+obj.context.moveTo(obj.lastPoint.x, obj.lastPoint.y);
+obj.context.lineTo(point.x, point.y);
+self.setLineWidth();
+obj.context.stroke();
+obj.lastPoint = point;
+obj.context.closePath();
+}
+ 
+/**
+* 轨迹样式
+*/
+this.writeContextStyle = function() {
+obj.context.beginPath();
+obj.context.strokeStyle = obj.writeColor;
+obj.context.lineCap = 'round';
+obj.context.lineJoin = "round";
+}
+ 
+/**
+* 写开始
+*/
+this.writeBegin = function(point) {
+obj.isWrite = true;
+obj.lastWriteTime = new Date().getTime();
+obj.lastPoint = point;
+self.writeContextStyle();
+}
+ 
+/**
+* 写结束
+*/
+this.writeEnd = function() {
+obj.isWrite = false;
+}
+ 
+/**
+* 清空画板
+*/
+this.canvasClear = function() {
+obj.context.save();
+obj.context.strokeStyle = '#fff';
+obj.context.clearRect(0, 0, obj.canvasWidth, obj.canvasHeight);
+if(obj.isShowBorder && !obj.isWriteName) {
+obj.context.beginPath();
+var size = obj.borderWidth / 2;
+//画外面的框
+obj.context.moveTo(size, size);
+obj.context.lineTo(obj.canvasWidth - size, size);
+obj.context.lineTo(obj.canvasWidth - size, obj.canvasHeight - size);
+obj.context.lineTo(size, obj.canvasHeight - size);
+obj.context.closePath();
+obj.context.lineWidth = obj.borderWidth;
+obj.context.strokeStyle = obj.borderColor;
+obj.context.stroke();
+//画里面的框
+obj.context.moveTo(0, 0);
+obj.context.lineTo(obj.canvasWidth, obj.canvasHeight);
+obj.context.lineTo(obj.canvasWidth, obj.canvasHeight / 2);
+obj.context.lineTo(obj.canvasWidth, obj.canvasHeight / 2);
+obj.context.lineTo(0, obj.canvasHeight / 2);
+obj.context.lineTo(0, obj.canvasHeight);
+obj.context.lineTo(obj.canvasWidth, 0);
+obj.context.lineTo(obj.canvasWidth / 2, 0);
+obj.context.lineTo(obj.canvasWidth / 2, obj.canvasHeight);
+obj.context.stroke();
+ 
+}
+obj.context.restore();
+}
+ 
+/**
+* 保存图片 格式base64
+*/
+this.saveAsImg = function() {
+var image = new Image();
+image.src = this.canvas.toDataURL("image/png");
+if(image.src == this.emptyCanvas) {
+alert('请先书写')
+} else {
+console.log('提交的内容===>', image.src)
+}
+};
+ 
+/**
+* 初始化画板
+*/
+this.canvasInit = function() {
+this.canvas.width = obj.canvasWidth;
+this.canvas.height = obj.canvasHeight;
+this.emptyCanvas = this.canvas.toDataURL("image/png");
+}
+ 
+/**======================事件绑定===========================**/
+ 
+this.canvas.addEventListener('mousedown', function(e) {
+var point = {
+x: e.offsetX || e.clientX,
+y: e.offsetY || e.clientY
+};
+self.writeBegin(point);
+});
+ 
+this.canvas.addEventListener('mouseup', function(e) {
+var point = {
+x: e.offsetX,
+y: e.offsetY
+};
+self.writeEnd(point);
+});
+ 
+this.canvas.addEventListener('mouseleave', function(e) {
+var point = {
+x: e.offsetX,
+y: e.offsetY
+};
+self.writeEnd(point);
+});
+ 
+this.canvas.addEventListener('mousemove', function(e) {
+if(obj.isWrite) {
+var point = {
+x: e.offsetX,
+y: e.offsetY
+};
+ 
+self.writing(point);
+}
+});
+ 
+//移动端
+this.canvas.addEventListener('touchstart', function(e) {
+var touch = e.targetTouches[0];
+var point = {
+x: touch.pageX || touch.clientX,
+y: touch.pageY || touch.clientY
+};
+self.writeBegin(point);
+});
+this.canvas.addEventListener('touchend', function(e) {
+var touch = e.changedTouches[0];
+var point = {
+x: touch.pageX,
+y: touch.pageY
+};
+self.writeEnd(point);
+});
+this.canvas.addEventListener('touchmove', function(e) {
+var touch = e.targetTouches[0];
+var point = {
+x: touch.pageX,
+y: touch.pageY
+};
+self.writeEnd(point);
+});
+this.canvas.addEventListener('touchmove', function(e) {
+var touch = e.targetTouches[0];
+var point = {
+x: touch.pageX,
+y: touch.pageY
+};
+self.writing(point);
+});
+ 
+this.canvasInit();
+this.canvasClear();
+ 
+this.option = obj;
+obj.control = {
+clearCanvas: self.canvasClear
+};
+}
+ 
+/**
+* 初始化调用
+* 设置参数
+*/
+var writeCanvas = new WriteFont('canvas', {
+borderWidth: 10,
+writeWidth:3,
+borderColor: '#ff6666',
+isWriteName:true //签名模式
+});
+ 
+// document.getElementById('clear').onclick = function() {
+// writeCanvas.option.control.clearCanvas();
+// };
+ 
+// document.getElementById('save').onclick = function() {
+// writeCanvas.saveAsImg()
+// };
+		var ids = localStorage.getItem("memberId");
+			 $.ajax({ 
+		     		type : "GET", //提交方式 
+		     		url : "https://weixin.sijiaoedu.com/api/memberInfo.html?",
+		     		data : { 
+		     				"id":92,  /*id*/	
+		     		}, 
+		     		success : function(data) { 
+		     			$(".name").html(data.result.userName)
+		     			$(".money").html(data.result.money)
+		     			$(".month").html("12");
+		     			$(".seal").html(data.result.userName)
+		     			$(".telephone").html(data.result.phone);
+		     			$(".year").html(data.result.isLive);
+						$(".month2").html(data.result.isReal);
+						$(".day").html(data.result.address);
+	     			} 
+    			}); 	
+	</script>
+</body>
+</html>
